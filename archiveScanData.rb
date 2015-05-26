@@ -389,7 +389,7 @@ cmd_line.key_list.each do |key|
       end
     end
   rescue Halo::ConnectionException => conn_err
-    puts "Connection Error: #{conn_err.error_descr}"
+    puts "Connection Error: #{conn_err.error_description}"
     exit
   rescue Halo::AuthException => api_err
     puts "Auth Error: status=#{api_err.http_status} msg=#{api_err.error_msg}"
