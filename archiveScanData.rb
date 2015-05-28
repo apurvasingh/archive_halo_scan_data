@@ -59,7 +59,7 @@ class CmdArgs
     @get_status = false
     @starting = nil
     @ending = nil
-    @page_size = 100
+    @page_size = 20
     @details = :None
     @percentiles = false
     @threads = 1
@@ -89,21 +89,22 @@ class CmdArgs
         argarg, @base_url = arg.split("=")
       elsif (arg.start_with?("--debug"))
         @debug = true
-        @page_size = 20
       elsif (arg.start_with?("--apistats"))
         @api_stats = true
+      elsif (arg.start_with?("--page="))
+        argarg, @page_size = arg.split("=")
       elsif (arg.start_with?("--threads="))
         argarg, tmptc = arg.split("=")
         begin
           @threads = Integer(tmptc)
-          if (@threads < 1) || (@threads > 100)
+          if (@threads < 1) || (@threads > 10)
             puts "Illegal thread number: #{@threads}"
-            puts "--thread=<num> requires an integer between 1 and 100"
+            puts "--thread=<num> requires an integer between 1 and 10"
             ok = false
           end
         rescue
           puts "Invalid thread number: #{tmptc}"
-          puts "--thread=<num> requires an integer between 1 and 100"
+          puts "--thread=<num> requires an integer between 1 and 10"
           ok = false
         end
       elsif (arg == "--localca")
@@ -131,7 +132,7 @@ class CmdArgs
     puts "    --base=<url>\t\tOverride base URL (normally #{@base_url})"
     puts "    --localca\t\t\tUse local CA file (needed on Windows)"
     puts "    --detailsfiles\t\tWrite details about each scan's results to a set of files"
-    puts "    --threads=<num>\t\tSet number of threads to use downloading scan results"
+    puts "    --threads=<num>\t\tSet number (between 1 and 10) of threads to use downloading scan results"
   end
 
   def readAuthFile(filename)
@@ -297,11 +298,11 @@ class FetchResultsThread
           redo
         rescue Halo::FailedException => bad_err
           if (retry_count > 3)
-            puts "Thread #{@start} failed, exiting: #{ex.message}"
+            puts "Thread #{@start} failed, exiting: status=#{bad_err.http_status} #{bad_err.error_description}"
             exit 1
           else
             retry_count += 1
-            puts "Thread #{@start} failed, retrying: #{ex.message}"
+            puts "Thread #{@start} failed, retrying: status=#{bad_err.http_status} #{bad_err.error_description}"
             redo
           end
         end
@@ -311,6 +312,8 @@ class FetchResultsThread
         puts "Storing output for page #{pageNum}" if @cmd_line.debug
         pageNum += @increment
       end until (status_list == nil) or (status_list.size == 0)
+    rescue Halo::FailedException => bad_err
+      puts "Thread #{@start} failed, exiting: status=#{bad_err.http_status} #{bad_err.error_description}"
     rescue Exception => ex
       puts "Thread #{@start} failed, exiting: #{ex.message}"
     end
