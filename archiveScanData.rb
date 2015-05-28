@@ -68,6 +68,19 @@ class CmdArgs
     @api_stats = false
   end
 
+  def checkDate(timestamp,type)
+    if (timestamp !~ /\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d{1,6})?)?(Z|[+-]\d{4})?)?$/)
+      puts "#{timestamp} is an illegal #{type} date format, use ISO8601"
+      return false
+    end
+    now = Time.now.utc.iso8601
+    if (timestamp > now)
+      puts "#{type} date/time #{timestamp} is in the future, use a current or past date/time"
+      return false
+    end
+    return true
+  end
+
   def parse(args)
     ok = true
     args.each do |arg|
@@ -83,8 +96,14 @@ class CmdArgs
         argarg, @group_name = arg.split("=")
       elsif (arg.start_with?("--starting="))
         argarg, @starting = arg.split("=")
+        if (! checkDate(@starting,"starting"))
+          ok = false
+        end
       elsif (arg.start_with?("--ending="))
         argarg, @ending = arg.split("=")
+        if (! checkDate(@ending,"ending"))
+          ok = false
+        end
       elsif (arg.start_with?("--base="))
         argarg, @base_url = arg.split("=")
       elsif (arg.start_with?("--debug"))
@@ -117,6 +136,13 @@ class CmdArgs
         @percentiles = true
       else
         puts "Unrecognized argument: #{arg}"
+        ok = false
+      end
+    end
+    if (@starting != nil) && (@ending != nil)
+      # puts "Both starting and ending specified"
+      if (@starting > @ending)
+        puts "starting time (#{@starting}) must be earlier than ending time (#{@ending})"
         ok = false
       end
     end
