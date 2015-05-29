@@ -73,6 +73,12 @@ class CmdArgs
       puts "#{timestamp} is an illegal #{type} date format, use ISO8601"
       return false
     end
+    begin
+      t = Time.iso8601(timestamp)
+      rescue ArgumentError
+      puts "#{timestamp} is an illegal #{type} date format, use ISO8601"
+      return false
+    end
     now = Time.now.utc.iso8601
     if (timestamp > now)
       puts "#{type} date/time #{timestamp} is in the future, use a current or past date/time"
