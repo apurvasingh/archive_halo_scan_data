@@ -50,8 +50,8 @@ class CmdArgs
 
   def initialize()
     @base_url = "https://portal.cloudpassage.com/"
-    @key_id = "05266dad"
-    @key_secret = "03f7ce883627f654cc877f67c9d61393"
+    @key_id = "key_id"
+    @key_secret = "key_secret"
     @url = nil
     @group_name = nil
     @verbose = false
@@ -68,16 +68,28 @@ class CmdArgs
     @api_stats = false
   end
 
-  def checkDate(timestamp,type)
-    if (timestamp !~ /\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d{1,6})?)?(Z|[+-]\d{4})?)?$/)
-      puts "#{timestamp} is an illegal #{type} date format, use ISO8601"
-      return false
+  def checkDigitRange(digits,min,max,name,type)
+    if (digits != nil)
+      num = digits.to_i
+      if (num < min) || (num > max)
+        puts "Illegal #{name} value (#{num}) in #{type} date"
+        return false
+      end
     end
-    begin
-      t = Time.iso8601(timestamp)
-      rescue ArgumentError
+    return true
+  end
+
+  def checkDate(timestamp,type)
+    if (timestamp !~ /(\d{4})-(\d{2})-(\d{2})(T(\d{2}):(\d{2})(:(\d{2})(\.(\d{1,6}))?)?(Z|[+-]\d{4})?)?$/)
       puts "#{timestamp} is an illegal #{type} date format, use ISO8601"
       return false
+    else
+      return false if (! checkDigitRange($1,1900,2100,"year",type))
+      return false if (! checkDigitRange($2,1,12,"month",type))
+      return false if (! checkDigitRange($3,1,31,"day",type))
+      return false if (! checkDigitRange($5,0,23,"hour",type))
+      return false if (! checkDigitRange($6,0,59,"minute",type))
+      return false if (! checkDigitRange($8,0,59,"seconds",type))
     end
     now = Time.now.utc.iso8601
     if (timestamp > now)
@@ -98,8 +110,6 @@ class CmdArgs
       elsif (arg == "-?") || (arg == "-h") || (arg == "--help")
         usage
         exit
-      elsif (arg.start_with?("--servergroup="))
-        argarg, @group_name = arg.split("=")
       elsif (arg.start_with?("--starting="))
         argarg, @starting = arg.split("=")
         if (! checkDate(@starting,"starting"))
