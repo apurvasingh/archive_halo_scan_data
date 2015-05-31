@@ -173,7 +173,7 @@ class CmdArgs
     puts "    --starting=<when>\t\tOnly get status for scans after when (ISO-8601 format)"
     puts "    --ending=<when>\t\tOnly get status for scans before when (ISO-8601 format)"
     puts "    --base=<url>\t\tOverride base URL (normally #{@base_url})"
-    puts "    --localca=<path>\t\t\tUse local CA file (needed on Windows)"
+    puts "    --localca=<path>\t\tUse local CA file (needed on Windows)"
     puts "    --detailsfiles\t\tWrite details about each scan's results to a set of files"
     puts "    --threads=<num>\t\tSet number (between 1 and 10) of threads to use downloading scan results"
   end
