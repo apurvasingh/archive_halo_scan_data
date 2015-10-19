@@ -34,17 +34,32 @@ $ ./archiveScanData.rb -?
 
 Usage: archiveScanData.rb [flag]
   where flag can be one of:
-    --auth=<file>			Read auth info from <file>
+    --auth=<file>			  Read auth info from <file>
     --starting=<when>		Only get historical scans after <when> (ISO-8601 format)
-    --ending=<when>		Only get historical scans till <when> (ISO-8601 format)
-    --base=<url>			Override base URL (normally https://portal.cloudpassage.com/)
-    --localca			Use local CA file (needed on Windows)
+    --ending=<when>		  Only get historical scans till <when> (ISO-8601 format)
+    --base=<url>			  Override base URL (normally https://portal.cloudpassage.com/)
+    --localca			      Use local CA file (needed on Windows)
     --detailsfiles			Write details about each scan's results to a set of files locally
-    --threads=<num>		Set number of threads to use downloading scan results
+    --threads=<num>		  Set number of threads to use downloading scan results (max of 10)
 
 After the program has run successfully, you will find a directory called “details” created under your current working directory under which the scan details will be archived.
 
-To retrieve and archive scan data since, say January 1 of 2015, use the following command:
-$./archiveScanData.rb --auth=/opt/halo/scanData.auth --threads=30 --detailsfiles --starting=2015-01-01
+To retrieve and archive scan data since say, June 1 of 2015, use the following command:
 
-  
+$./archiveScanData.rb --auth=/opt/halo/scanData.auth --threads=10 --detailsfiles --starting=2015-01-01
+
+The program will extract scan data from your Halo portal account and store them locally in a directory structure similar to this:
+
+details --> Halo server name --> individual scan files
+
+$ cd details
+$ ls -ltr
+total 0
+drwxr-xr-x  14 tuser  test  476 Jun 10 06:53 v6ser_1ac22a80d31a0132814e3c764e109fc9
+drwxr-xr-x  14 tuser  test  476 Jun 10 06:53 v6cl_14e96b30d31a013286423c764e1014a8
+
+$ cd v6ser_1ac22a80d31a0132814e3c764e109fc9/
+$ ls -ltr
+total 1056
+-rw-r--r--  1 tuser  test  78823 Jun 10 06:51 svm_ec3971960da111e587313b24f0b56704_2015-06-08_details.txt
+-rw-r--r--  1 tuser  test   6991 Jun 10 06:53 sam_badebff80cd311e5a9aq1b8dc77f7742_2015-06-07_details.txt
